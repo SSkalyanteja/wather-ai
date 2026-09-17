@@ -1025,7 +1025,7 @@
         chatContainer.innerHTML = '';
         const current = sessions.find(s => s.id === currentSessionId);
         if (!current || current.messages.length === 0) {
-          appendRow('wather', 'I am **Wather (Beta v0.9)**. You have **100 trial credits** (20 credits per query). Ask me any coding, architecture, or general question!');
+          appendRow('wather', 'I am **Wather (Beta v0.9)**. You have **100 trial credits** (20 credits per query). Ask me any technical, architectural, or coding question!');
           return;
         }
         current.messages.forEach(m => appendRow(m.role, m.content));
@@ -1050,56 +1050,50 @@
         highlight: (code, lang) => hljs.getLanguage(lang) ? hljs.highlight(code, { language: lang }).value : hljs.highlightAuto(code).value
       });
 
-      // REAL-TIME AI INFERENCE STREAM (ZERO BACKEND NEEDED FOR GITHUB PAGES)
+      // CLOUD AI STREAMING ENGINE (RENDER + GEMINI)
       async function streamLiveAI(messages, onChunk, signal) {
-        const systemPrompt = "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju (portfolio: https://sskalyanteja.github.io/). Provide sharp, insightful, helpful, and concise answers with Markdown formatting and code blocks when appropriate.";
-        
-        const conversation = [
-          { role: 'system', content: systemPrompt },
-          ...messages.slice(-8)
-        ];
+        const CLOUD_API_URL = 'https://wather-ai.onrender.com/api/chat';
 
         try {
-          const res = await fetch('https://text.pollinations.ai/', {
+          const res = await fetch(CLOUD_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              messages: conversation,
-              model: 'openai',
-              stream: true,
-              seed: 42
-            }),
+            body: JSON.stringify({ messages }),
             signal: signal
           });
 
-          if (!res.ok) throw new Error('Live upstream offline');
+          if (!res.ok) throw new Error(`Cloud API error: ${res.status}`);
 
           const reader = res.body.getReader();
           const decoder = new TextDecoder();
+          let buffer = '';
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const textChunk = decoder.decode(value, { stream: true });
-            onChunk(textChunk);
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed === 'data: [DONE]') continue;
+              if (trimmed.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(trimmed.slice(6));
+                  if (data.text) {
+                    onChunk(data.text);
+                  }
+                } catch (e) {}
+              }
+            }
           }
         } catch (err) {
           if (err.name === 'AbortError') throw err;
 
-          // Reliable fallback answering the specific question cleanly if upstream has latency
-          const lastMsg = messages[messages.length - 1]?.content || '';
-          const fallback = `Here is what you need to know regarding **"${lastMsg}"**:\n\n` +
-            `* **Overview**: The best choice depends directly on your target audience, use case, and performance goals.\n` +
-            "* **Top Platforms**: **LinkedIn** for professional reach, **X (Twitter)** and **Reddit** for tech and active discussions, and **YouTube** or **Instagram** for media and visual engagement.\n" +
-            "* **Key Takeaway**: Align your strategy with where your specific community actively engages.\n\n" +
-            "Would you like me to elaborate on a specific platform or strategy?";
-
-          const words = fallback.split(' ');
-          for (let i = 0; i < words.length; i++) {
-            if (signal.aborted) break;
-            onChunk((i === 0 ? '' : ' ') + words[i]);
-            await new Promise(r => setTimeout(r, 25));
-          }
+          const fallback = "Connecting to the cloud engine... If the server was idle, the first response can take ~30 seconds to spin up. Please submit your prompt again in a moment!";
+          onChunk(fallback);
         }
       }
 
@@ -1112,11 +1106,11 @@
         const text = promptInput.value.trim();
         if (!text) return;
 
-        // CREDIT GATE CHECK
+        // CREDIT GATE
         if (!currentUser) {
           if (credits < 20) {
             document.getElementById('authTitleText').innerText = "Trial Complete (0 Credits)";
-            document.getElementById('authSubText').innerText = "You have used all 100 free credits. Sign in to continue your session!";
+            document.getElementById('authSubText').innerText = "You have used all 100 free credits. Sign in with Google or create an account to unlock unlimited access!";
             authModal.classList.add('show');
             return;
           }
@@ -1177,7 +1171,7 @@
               document.getElementById('authTitleText').innerText = "Trial Complete (0 Credits)";
               document.getElementById('authSubText').innerText = "You have used all 100 free credits. Sign in with Google or create an account to unlock unlimited access!";
               authModal.classList.add('show');
-            }, 800);
+            }, 700);
           }
         }
       }
