@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenAI } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,11 +23,10 @@ app.get('/app', (req, res) => {
   res.sendFile(path.join(__dirname, 'app.html'));
 });
 
-// Native Gemini Streaming Endpoint with AQ Auth Key Support
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'Invalid messages array.' });
+    return res.status(400).json({ error: 'Invalid messages format.' });
   }
 
   const apiKey = GEMINI_API_KEY ? GEMINI_API_KEY.trim() : '';
@@ -34,73 +34,37 @@ app.post('/api/chat', async (req, res) => {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on server.' });
   }
 
-  const contents = messages.slice(-10).map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }));
-
-  const systemInstruction = {
-    parts: [{
-      text: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
-    }]
-  };
-
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
   try {
-   const url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:streamGenerateContent?alt=sse';
+    const ai = new GoogleGenAI({ apiKey });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify({
-        contents,
-        system_instruction: systemInstruction
-      })
+    // Format chat history for the SDK
+    const contents = messages.slice(-10).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const responseStream = await ai.models.generateContentStream({
+      model: 'gemini-2.0-flash',
+      contents,
+      config: {
+        systemInstruction: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
+      }
     });
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      res.write(`data: ${JSON.stringify({ text: `\n\nAI Engine Error (${response.status}): ${errBody}` })}\n\n`);
-      res.write('data: [DONE]\n\n');
-      return res.end();
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(trimmed.slice(6));
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              res.write(`data: ${JSON.stringify({ text })}\n\n`);
-            }
-          } catch (e) {}
-        }
+    for await (const chunk of responseStream) {
+      if (chunk.text) {
+        res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
       }
     }
 
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
-    res.write(`data: ${JSON.stringify({ text: "\n\n*[Connection interrupted]*" })}\n\n`);
+    res.write(`data: ${JSON.stringify({ text: `\n\nAI Engine Error: ${err.message}` })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
   }
