@@ -22,7 +22,7 @@ app.get('/app', (req, res) => {
   res.sendFile(path.join(__dirname, 'app.html'));
 });
 
-// Live Gemini Streaming Endpoint
+// Native Gemini Streaming Endpoint with AQ Auth Key Support
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
@@ -41,7 +41,7 @@ app.post('/api/chat', async (req, res) => {
 
   const systemInstruction = {
     parts: [{
-      text: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju (portfolio: https://sskalyanteja.github.io/). Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
+      text: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
     }]
   };
 
