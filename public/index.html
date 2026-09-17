@@ -2,561 +2,342 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wather — Adaptive Intelligence Platform (Beta)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Wather — Adaptive Intelligence Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #070c09;
-      --surface: #0c1410;
-      --card: #101c15;
-      --card-hover: #15241b;
-      --card-border: #1b3023;
+      --bg: #070d09;
+      --surface: #0e1712;
+      --card-bg: #121f18;
+      --border: #1c3024;
+      --border-light: #2a4736;
       --primary: #10b981;
       --primary-hover: #34d399;
-      --primary-glow: rgba(16, 185, 129, 0.25);
+      --primary-glow: rgba(16, 185, 129, 0.18);
       --text: #e8f5ee;
-      --text-muted: #82a392;
-      --accent-gold: #f59e0b;
+      --muted: #82a392;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     body {
       background-color: var(--bg);
       color: var(--text);
       font-family: 'Plus Jakarta Sans', sans-serif;
-      line-height: 1.6;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
       overflow-x: hidden;
+      line-height: 1.5;
     }
 
-    a { color: inherit; text-decoration: none; }
+    /* Ambient background lighting */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-    nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 20px;
+    /* Header Nav */
+    header {
+      height: 64px;
+      padding: 0 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      background: rgba(7, 12, 9, 0.85);
-      backdrop-filter: blur(12px);
-      z-index: 100;
-      border-bottom: 1px solid rgba(27, 48, 35, 0.5);
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 10;
+      background: rgba(7, 13, 9, 0.7);
+      backdrop-filter: blur(10px);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 1.25rem;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
     }
 
     .brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+      width: 32px;
+      height: 32px;
       background: linear-gradient(135deg, #10b981, #047857);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
       font-weight: 800;
-      box-shadow: 0 0 16px var(--primary-glow);
+      font-size: 1rem;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
     }
 
-    .beta-tag {
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--accent-gold);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 0.7rem;
+    .brand-name {
       font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
     }
 
-    .nav-links {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 24px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--text-muted);
+      gap: 10px;
     }
 
-    .nav-links a:hover { color: var(--primary); }
-
-    .cta-btn {
-      background: var(--primary);
-      color: #070c09;
-      padding: 10px 22px;
-      border-radius: 99px;
+    .beta-badge {
+      font-size: 0.68rem;
       font-weight: 700;
-      font-size: 0.92rem;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      background: rgba(234, 179, 8, 0.15);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
     }
 
-    .cta-btn:hover {
+    .nav-btn {
+      background: var(--primary);
+      color: #05140b;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn:hover {
       background: var(--primary-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px var(--primary-glow);
+      box-shadow: 0 0 14px var(--primary-glow);
     }
 
-    .hero {
-      max-width: 960px;
-      margin: 70px auto 40px;
+    /* Hero Section */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .hero-container {
+      max-width: 680px;
+      width: 100%;
       text-align: center;
-      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
 
-    .badge-pill {
+    .pill-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid var(--card-border);
-      color: var(--primary);
-      padding: 6px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
       border-radius: 99px;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
+      color: var(--primary);
       font-weight: 600;
-      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
     }
 
     h1 {
-      font-size: 3.8rem;
+      font-size: clamp(2.1rem, 6.5vw, 3.4rem);
       font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      margin-bottom: 22px;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      color: #ffffff;
     }
 
     h1 span {
-      background: linear-gradient(135deg, #34d399, #10b981);
+      background: linear-gradient(135deg, #34d399 20%, #10b981 80%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero-desc {
-      font-size: 1.2rem;
-      color: var(--text-muted);
-      max-width: 720px;
-      margin: 0 auto 36px;
+      font-size: clamp(0.92rem, 2.8vw, 1.05rem);
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 540px;
+      padding: 0 8px;
     }
 
-    .hero-action-group {
+    /* Action Deck */
+    .cta-deck {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      width: 100%;
+      margin-top: 10px;
     }
 
-    .cta-large {
-      padding: 16px 36px;
-      font-size: 1.1rem;
+    .primary-cta {
+      width: 100%;
+      max-width: 320px;
+      background: var(--primary);
+      color: #041209;
+      text-decoration: none;
+      padding: 13px 20px;
       border-radius: 12px;
-      box-shadow: 0 8px 30px var(--primary-glow);
-    }
-
-    .no-signup-subtext {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .stats-strip {
-      max-width: 1000px;
-      margin: 60px auto 0;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      padding: 0 24px;
-    }
-
-    .stat-item {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .section-head {
-      text-align: center;
-      max-width: 680px;
-      margin: 100px auto 40px;
-      padding: 0 20px;
-    }
-
-    .section-tag {
-      color: var(--primary);
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
-    }
-
-    .section-head h2 {
-      font-size: 2.4rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 12px;
-    }
-
-    .section-head p {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-    }
-
-    .features-grid {
-      max-width: 1160px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-
-    .feature-card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 30px 24px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      transition: all 0.2s ease;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--primary-glow);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .feature-card:hover {
-      background: var(--card-hover);
-      border-color: var(--primary);
-      transform: translateY(-4px);
+    .primary-cta:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
     }
 
-    .feature-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: rgba(16, 185, 129, 0.12);
+    .primary-cta:active {
+      transform: scale(0.98);
+    }
+
+    .cta-main-text {
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cta-sub-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      opacity: 0.85;
+      letter-spacing: 0.02em;
+    }
+
+    .cta-perks {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
-    }
-
-    .feature-card h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .feature-card p {
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .feature-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      color: var(--primary);
-      margin-top: auto;
-      font-weight: 600;
-    }
-
-    .steps-section {
-      max-width: 1000px;
-      margin: 40px auto 80px;
-      padding: 0 24px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-
-    .step-box {
-      background: var(--surface);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 28px 20px;
-      position: relative;
-    }
-
-    .step-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 12px;
-    }
-
-    .step-box h4 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .step-box p {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-    }
-
-    .cta-banner {
-      max-width: 1000px;
-      margin: 80px auto;
-      padding: 60px 40px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #10291c, #09130c);
-      border: 1px solid var(--primary);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    }
-
-    .cta-banner h2 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 14px;
-    }
-
-    .cta-banner p {
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 30px;
-      font-size: 1.05rem;
-    }
-
-    footer {
-      border-top: 1px solid var(--card-border);
-      padding: 40px 24px 30px;
-      margin-top: 60px;
-      background: #050806;
-    }
-
-    .footer-content {
-      max-width: 1160px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 8px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 0 10px;
     }
 
-    .footer-left {
-      font-size: 0.88rem;
-      color: var(--text-muted);
+    .perk-bullet {
+      opacity: 0.4;
     }
 
-    .footer-creator {
-      font-weight: 600;
-      color: var(--text);
-      margin-top: 4px;
+    /* Footer */
+    footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      position: relative;
+      z-index: 10;
     }
 
-    .creator-link {
-      color: var(--primary);
-      text-decoration: underline;
-      text-underline-offset: 4px;
-      transition: color 0.15s;
-    }
-
-    .creator-link:hover {
-      color: var(--primary-hover);
-    }
-
-    .footer-right {
-      display: flex;
-      gap: 20px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .footer-right a:hover { color: var(--primary); }
-
-    @media (max-width: 860px) {
-      h1 { font-size: 2.6rem; }
-      .features-grid, .steps-section, .stats-strip { grid-template-columns: 1fr; }
-      .cta-banner { padding: 40px 20px; }
-      .nav-links { display: none; }
-      .footer-content { flex-direction: column; text-align: center; }
+    @media (max-width: 480px) {
+      header {
+        padding: 0 14px;
+      }
+      .nav-btn {
+        padding: 7px 11px;
+        font-size: 0.78rem;
+      }
+      .primary-cta {
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <nav>
+  <header>
     <a href="index.html" class="brand">
       <div class="brand-icon">W</div>
-      <span>Wather</span>
-      <span class="beta-tag">BETA</span>
+      <div class="brand-name">Wather</div>
     </a>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#workflow">Architecture</a>
-      <a href="#credits">Credit Economy</a>
+    <div class="header-actions">
+      <span class="beta-badge">BETA</span>
+      <a href="app.html" class="nav-btn">Open Console →</a>
     </div>
-    <a href="app.html" class="cta-btn">Open AI Console →</a>
-  </nav>
+  </header>
 
-  <section class="hero">
-    <div class="badge-pill">
-      <span>●</span> 100 Free Trial Credits Granted Instantly
-    </div>
-    <h1>Adaptive Intelligence for <span>Architects & Builders</span></h1>
-    <p class="hero-desc">
-      Stop fighting rigid chat interfaces. Wather provides localized, low-latency streaming workspaces designed for deep technical problems, full syntax styling, and abortable runtimes.
-    </p>
-
-    <div class="hero-action-group">
-      <a href="app.html" class="cta-btn cta-large">
-        Launch Wather Free (No Sign Up Needed) →
-      </a>
-      <p class="no-signup-subtext">Immediate access • 100 starting credits • 20 credits per generation • Full guest trial</p>
-    </div>
-  </section>
-
-  <section class="stats-strip">
-    <div class="stat-item">
-      <div class="stat-num">0ms</div>
-      <div class="stat-label">Onboarding Latency (Instant Guest Entry)</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">100</div>
-      <div class="stat-label">Free Starting Trial Credits</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">&lt;25ms</div>
-      <div class="stat-label">Local Token Streaming Time-To-First-Byte</div>
-    </div>
-  </section>
-
-  <section id="features">
-    <div class="section-head">
-      <div class="section-tag">Core Capabilities</div>
-      <h2>Engineered for Technical Velocity</h2>
-      <p>Every tool and interaction layer is tuned to reduce cognitive friction during architecture and debugging.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon-box">⚡</div>
-        <h3>High-Throughput Streaming</h3>
-        <p>Responses stream token-by-token directly in the browser. Markdown tables, syntax highlighting, and code copy tools render in real time.</p>
-        <span class="feature-badge">STREAMING INFERENCE CORE</span>
+  <main>
+    <div class="hero-container">
+      <div class="pill-badge">
+        <span class="pill-dot"></span>
+        100 Free Trial Credits Granted Instantly
       </div>
 
-      <div class="feature-card">
-        <div class="feature-icon-box">🛑</div>
-        <h3>Interrupt &amp; Stop Control</h3>
-        <p>Halt verbose code outputs immediately using native client abort signals whenever you need to adjust instructions.</p>
-        <span class="feature-badge">ABORTCONTROLLER INTEGRATED</span>
-      </div>
+      <h1>
+        Adaptive Intelligence for <span>Architects &amp; Builders</span>
+      </h1>
 
-      <div class="feature-card">
-        <div class="feature-icon-box">✏️</div>
-        <h3>Session Management</h3>
-        <p>Rename complex research threads dynamically, delete obsolete experiments, and switch chats with zero reload overhead.</p>
-        <span class="feature-badge">INLINE RENAME &amp; PURGE</span>
-      </div>
+      <p class="hero-desc">
+        Stop fighting rigid chat interfaces. Wather provides localized, low-latency streaming workspaces designed for deep technical problems, clean syntax rendering, and abortable runtimes.
+      </p>
 
-      <div class="feature-card">
-        <div class="feature-icon-box">🛡️</div>
-        <h3>Enclave Scoping</h3>
-        <p>Guest sessions and logged-in accounts maintain separate namespaces in browser storage, ensuring distinct profiles never cross-contaminate data.</p>
-        <span class="feature-badge">USER-SCOPED ENCLAVES</span>
-      </div>
+      <div class="cta-deck">
+        <a href="app.html" class="primary-cta">
+          <span class="cta-main-text">Launch Wather Free →</span>
+          <span class="cta-sub-text">No Sign Up Needed</span>
+        </a>
 
-      <div class="feature-card">
-        <div class="feature-icon-box">📱</div>
-        <h3>Adaptive Responsive UI</h3>
-        <p>Optimized for all viewports. Enjoy full slide-over drawers on mobile, touch-enabled session actions, and notched display compensation.</p>
-        <span class="feature-badge">VIEWPORT-FIT READY</span>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-box">🔑</div>
-        <h3>Hybrid Supabase Auth</h3>
-        <p>Continue friction-free with Google OAuth or email authentication once your trial credits complete to access unlimited generations.</p>
-        <span class="feature-badge">SUPABASE AUTH ENGINE</span>
+        <div class="cta-perks">
+          <span>Immediate access</span>
+          <span class="perk-bullet">•</span>
+          <span>100 starting credits</span>
+          <span class="perk-bullet">•</span>
+          <span>20 credits per generation</span>
+        </div>
       </div>
     </div>
-  </section>
-
-  <section id="workflow">
-    <div class="section-head">
-      <div class="section-tag">The Architecture</div>
-      <h2>How Wather Operates</h2>
-      <p>From instant guest experimentation to persistent production workflows.</p>
-    </div>
-
-    <div class="steps-section">
-      <div class="step-box">
-        <div class="step-number">01 / TRIAL</div>
-        <h4>Instant Entry</h4>
-        <p>Click Launch to directly enter the app. Your session starts with 100 free credits with zero barrier forms or credentials required.</p>
-      </div>
-
-      <div class="step-box">
-        <div class="step-number">02 / INTERACT</div>
-        <h4>Deduct &amp; Stream</h4>
-        <p>Submit questions and receive streamed markdown. 20 credits are cleanly deducted per query with real-time UI gauge tracking.</p>
-      </div>
-
-      <div class="step-box">
-        <div class="step-number">03 / UPGRADE</div>
-        <h4>Seamless Continuation</h4>
-        <p>When credits reach zero, authenticate with Google or email. All your existing chats stay loaded into your permanent profile.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta-banner" id="credits">
-    <h2>Ready to Build with Wather?</h2>
-    <p>Try the workspace right now with 100 free credits. Experience high-speed streaming intelligence without signing up.</p>
-    <a href="app.html" class="cta-btn cta-large">
-      Start Exploring Free →
-    </a>
-  </section>
+  </main>
 
   <footer>
-    <div class="footer-content">
-      <div class="footer-left">
-        <p>© 2026 Wather AI Inc. All rights reserved.</p>
-        <p class="footer-creator">
-          Designed and built by 
-          <a href="https://sskalyanteja.github.io/" target="_blank" rel="noopener noreferrer" class="creator-link">
-            Kalyan Teja Siddiraju
-          </a>
-        </p>
-      </div>
-      <div class="footer-right">
-        <a href="app.html">AI Console</a>
-        <a href="#features">Features</a>
-        <a href="https://sskalyanteja.github.io/" target="_blank" rel="noopener noreferrer">Portfolio</a>
-      </div>
-    </div>
+    Wather AI Core (Beta v0.9) • Architected by Kalyan Teja Siddiraju
   </footer>
 
 </body>
