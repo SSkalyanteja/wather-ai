@@ -38,22 +38,37 @@ app.post('/api/chat', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  try {
-    const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey });
 
-    // Format chat history for the SDK
-    const contents = messages.slice(-10).map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
+  const contents = messages.slice(-10).map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
 
-    const responseStream = await ai.models.generateContentStream({
+  const systemInstruction = "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown.";
+
+  async function requestStream() {
+    return await ai.models.generateContentStream({
       model: 'gemini-3.6-flash',
       contents,
-      config: {
-        systemInstruction: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
-      }
+      config: { systemInstruction }
     });
+  }
+
+  try {
+    let responseStream;
+
+    try {
+      responseStream = await requestStream();
+    } catch (err) {
+      // If 503 high-demand spike occurs, wait 1.5s and retry once
+      if (err.message && err.message.includes('503')) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        responseStream = await requestStream();
+      } else {
+        throw err;
+      }
+    }
 
     for await (const chunk of responseStream) {
       if (chunk.text) {
@@ -64,7 +79,12 @@ app.post('/api/chat', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
-    res.write(`data: ${JSON.stringify({ text: `\n\nAI Engine Error: ${err.message}` })}\n\n`);
+    const is503 = err.message && err.message.includes('503');
+    const userMessage = is503
+      ? "\n\n*[High server demand right now. Please resend your prompt in a few seconds.]*"
+      : `\n\nAI Engine Error: ${err.message}`;
+
+    res.write(`data: ${JSON.stringify({ text: userMessage })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
   }
