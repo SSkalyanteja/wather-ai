@@ -29,7 +29,8 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Invalid messages array.' });
   }
 
-  if (!GEMINI_API_KEY) {
+  const apiKey = GEMINI_API_KEY ? GEMINI_API_KEY.trim() : '';
+  if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on server.' });
   }
 
@@ -50,20 +51,13 @@ app.post('/api/chat', async (req, res) => {
 
   try {
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse';
-    
-    // Clean key string
-    const key = GEMINI_API_KEY.trim();
-
-    // Prepare headers: pass x-goog-api-key and Authorization Bearer header
-    const headers = {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': key,
-      'Authorization': `Bearer ${key}`
-    };
 
     const response = await fetch(url, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
       body: JSON.stringify({
         contents,
         system_instruction: systemInstruction
@@ -72,7 +66,7 @@ app.post('/api/chat', async (req, res) => {
 
     if (!response.ok) {
       const errBody = await response.text();
-      res.write(`data: ${JSON.stringify({ text: "Error connecting to AI engine: " + errBody })}\n\n`);
+      res.write(`data: ${JSON.stringify({ text: `\n\nAI Engine Error (${response.status}): ${errBody}` })}\n\n`);
       res.write('data: [DONE]\n\n');
       return res.end();
     }
