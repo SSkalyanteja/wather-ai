@@ -49,11 +49,21 @@ app.post('/api/chat', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse';
     
+    // Clean key string
+    const key = GEMINI_API_KEY.trim();
+
+    // Prepare headers: pass x-goog-api-key and Authorization Bearer header
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': key,
+      'Authorization': `Bearer ${key}`
+    };
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         contents,
         system_instruction: systemInstruction
