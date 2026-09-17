@@ -48,7 +48,7 @@ app.post('/api/chat', async (req, res) => {
     }));
 
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents,
       config: {
         systemInstruction: "You are Wather (Beta v0.9), an adaptive AI intelligence platform designed and architected by Kalyan Teja Siddiraju. Deliver sharp, accurate, well-formatted technical responses with clear code blocks and markdown."
