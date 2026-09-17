@@ -415,6 +415,21 @@
     .content-block p { margin-bottom: 12px; }
     .content-block p:last-child { margin-bottom: 0; }
 
+    .thinking-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.99); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
     pre {
       margin: 14px 0;
       padding: 14px 16px;
@@ -1092,7 +1107,7 @@
         } catch (err) {
           if (err.name === 'AbortError') throw err;
 
-          const fallback = "Connecting to the cloud engine... If the server was idle, the first response can take ~30 seconds to spin up. Please submit your prompt again in a moment!";
+          const fallback = "\n\n*[The cloud engine is temporarily synchronizing. Please try your prompt again in a moment.]*";
           onChunk(fallback);
         }
       }
@@ -1136,13 +1151,19 @@
         appendRow('user', text);
         saveSessions();
 
-        const botContentEl = appendRow('wather', '');
+        // Immediate visual pulse feedback
+        const botContentEl = appendRow('wather', '<span class="thinking-pill">Thinking...</span>');
         let fullResponse = '';
+        let isFirstChunk = true;
 
         try {
           await streamLiveAI(
             current.messages,
             (chunk) => {
+              if (isFirstChunk) {
+                botContentEl.innerHTML = '';
+                isFirstChunk = false;
+              }
               fullResponse += chunk;
               botContentEl.innerHTML = marked.parse(fullResponse);
               hljs.highlightAll();
@@ -1156,7 +1177,7 @@
           saveSessions();
         } catch (err) {
           if (err.name === 'AbortError') {
-            botContentEl.innerHTML += '<br><em style="color:var(--text-muted);font-size:0.8rem;">(Response stopped)</em>';
+            botContentEl.innerHTML += '<br><em style="color:var(--text-muted);font-size:0.8rem;">(Stopped)</em>';
             if (fullResponse) {
               current.messages.push({ role: 'assistant', content: fullResponse + ' *(stopped)*' });
               saveSessions();
@@ -1184,7 +1205,7 @@
         avatar.innerText = role === 'user' ? 'U' : 'W';
         const content = document.createElement('div');
         content.className = 'content-block';
-        content.innerHTML = text ? marked.parse(text) : '...';
+        content.innerHTML = text ? (text.startsWith('<span') ? text : marked.parse(text)) : '...';
         row.appendChild(avatar);
         row.appendChild(content);
         chatContainer.appendChild(row);
